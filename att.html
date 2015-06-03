@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head lang='en'>
+<meta charset='UTF-8'>
+</head>
+<body>
+<header>Enhanced WebRTC DevLab</header>
+
+<p> 
+    <input type='text' id='UsernameText' value=''>@
+    <span id='ewebrtcDomainSpan'>Loading...</span>
+</p>
+
+<p>
+    <span id='statusLabel'></span>
+</p>
+
+<script src='//code.jquery.com/jquery-2.1.1.min.js'></script>
+<script type='text/javascript' src='/js/ewebrtc-sdk.min.js'></script>   
+<script type='text/javascript'>
+// Global variables
+var myDHS = 'https://127.0.0.1:9001',
+  ewebrtc_domain,
+  app_token_url,
+  phone,
+  accessToken;
+
+// Get the domain app token URL
+$.ajax({    
+  type: 'GET',
+  url: myDHS + '/config',
+  success: function(data) {
+       // Get the domain
+       ewebrtc_domain = data.ewebrtc_domain;
+       app_token_url = data.app_token_url;
+       ewebrtcDomainSpan.textContent = ewebrtc_domain;
+
+  },
+  error: onError   
+});
+
+
+function onError(data) {
+    statusLabel.textContent = 'Error: ' + data.error.ErrorMessage;
+}
+
+
+</script>
+
+</body>
+</html>

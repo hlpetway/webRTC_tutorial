@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head lang='en'>
+<meta charset='UTF-8'>
+</head>
+<body>
+<header>Enhanced WebRTC DevLab</header>
+
+<p> 
+    <input type='text' id='UsernameText' value=''>@
+    <span id='ewebrtcDomainSpan'>Loading...</span>
+</p>
+
+<p>
+    <span id='statusLabel'></span>
+</p>
+
+<p>
+    <button id='LoginButton' onclick='login()'>Login</button>
+    <button id='LogoutButton' onclick='logout()'>Logout</button>
+</p>
+
+<script src='//code.jquery.com/jquery-2.1.1.min.js'></script>
+<script type='text/javascript' src='/js/ewebrtc-sdk.min.js'></script>   
+<script type='text/javascript'>
+// Global variables
+var myDHS = 'https://127.0.0.1:9001',
+  ewebrtc_domain,
+  app_token_url,
+  phone,
+  accessToken;
+
+// Create a phone object and register events
+phone = ATT.rtc.Phone.getPhone();
+phone.on('error', onError);  
+phone.on('session:ready', onLoginSuccess);
+phone.on('session:disconnected', onLogout);
+
+// Get the domain app token URL
+$.ajax({    
+  type: 'GET',
+ url: myDHS + '/config',
+   success: function(data) {
+       // Get the domain
+       ewebrtc_domain = data.ewebrtc_domain;
+       app_token_url = data.app_token_url;
+       ewebrtcDomainSpan.textContent = ewebrtc_domain;
+
+  },
+  error: onError   
+});
+
+
+function onError(data) {
+    statusLabel.textContent = 'Error: ' + data.error.ErrorMessage;
+}
+
+function login() {
+    // Obtain access token
+
+    $.ajax({    
+        type: 'POST',
+        url: app_token_url, 
+        data: {app_scope: 'ACCOUNT_ID'},
+        success: function(data) {
+            accessToken = data;
+            associateAccessToken();
+        },
+        error: onError
+    });   
+}
+
+function associateAccessToken() {
+    phone.associateAccessToken({
+        userId: UsernameText.value,
+        token: accessToken.access_token,
+        success: function () {
+            // If successful, then log in
+            phone.login({token: accessToken.access_token});
+        },
+        error: onError
+    }); 
+}
+
+function onLoginSuccess(data) {
+    statusLabel.textContent = 'Login successful';
+}
+
+function logout() {
+  phone.logout();
+}
+
+function onLogout() {
+  statusLabel.textContent = 'Logged out';
+}
+
+</script>
+
+</body>
+</html>
